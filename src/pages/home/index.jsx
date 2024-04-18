@@ -1,35 +1,40 @@
+import { useState } from 'react';
 import './style.css';
+import { useEffect } from 'react';
+import Note from '../../components/Note';
+import Repository from '../../components/Repository';
 
 export default function Home() {
-  let notes = [{}];
-  let count = 0;
+  let [notes, setNotes] = useState(JSON.parse(localStorage.getItem('notes')) ?? []);
+
+  useEffect(() => {
+    localStorage.setItem('notes', JSON.stringify(notes));
+  }, [notes]);
 
   const addNote = () => {
     const newNote = {
       id: Date.now(),
       text: ''
     };
-    notes.push(newNote);
-    count++;
+    setNotes(notes => [...notes, newNote]);
+  };
+
+  const deleteNote = (id) => {
+    setNotes(notes => notes.filter(note => note.id !== id));
+  };
+
+  const updateNote = (id, text) => {
+    setNotes(notes => notes.map(note => note.id === id ? {...note, text: text} : note));
   };
 
   return (
     <div id='container'>
       <h1 id='titulo'>Sistema de Notas</h1>
       <button className='btn' onClick={addNote}>Adicionar Nota</button>
-      <p className='paragraph'>Quantidade de Notas: {count}</p>
-      <div className='note'>
-        <textarea
-          rows="4"
-          cols="50"
-        />
-        <button className='btn'>Deletar</button>
-      </div>
+      <p className='paragraph'>Quantidade de Notas: {notes.length}</p>
+      { notes.map(note => <Note key={note.id} note={note} updateNote={updateNote} deleteNote={deleteNote} />) }
       <h2 id='subtitulo'>Repositório de notas</h2>
-      <div id='repository'>
-        <p className='paragraph'>ID: </p>
-        <p className='paragraph'>Conteúdo: </p>
-      </div>
+      { notes.map(note => <Repository key={note.id} note={note} />) }
     </div>
   );
 }
